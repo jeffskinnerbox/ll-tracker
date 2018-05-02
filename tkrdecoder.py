@@ -1,0 +1,401 @@
+#!/usr/bin/python3
+'''--------------------------------------------------------------------------'''
+'''
+DESCRIPTION
+    This module parses and decodes the payload delivered by the Link Labs
+    GPS Tracker and places it in a Python dictionary object with the
+    following form:
+
+    { 'PayL': '10174D9BEBD1C13F1B0021FFE5', 'Msg Cnt': 4, 'Msg Type': 'GPS',
+      'Lat': 39.0962155, 'Lon': -77.5864549, 'Alt': 33, 'Batt': 4.23,
+      'Reserved': 'N/A' }
+
+REFERENCE MATERIALS
+    * https://stackoverflow.com/questions/6727875/hex-string-to-signed-int-in-python-3-2           # noqa
+    * https://www.binaryhexconverter.com/hex-to-binary-converter
+    * http://www.binaryconvert.com/convert_signed_int.html
+
+CREATED BY
+    Jeff Irland (jeffrey.irland@verizon.com) in May 2018
+'''
+
+
+# mapping of hex characters to binary repensetation in ascii
+hex2bin_map = {'0': '0000', '1': '0001', '2': '0010', '3': '0011', '4': '0100',
+               '5': '0101', '6': '0110', '7': '0111', '8': '1000', '9': '1001',
+               'A': '1010', 'B': '1011', 'C': '1100', 'D': '1101', 'E': '1110',
+               'F': '1111', 'a': '1010', 'b': '1011', 'c': '1100', 'd': '1101',
+               'e': '1110', 'f': '1111'}
+
+
+def HextoBin(hexstring):
+    '''Convert a hex encoded ascii string to a binary encoded ascii string.
+    '''
+    binarystring = ''.join(hex2bin_map[i] for i in hexstring)
+    return binarystring
+
+
+def BintoInt(binarystring):
+    '''Convert binary encoded ascii string to integer data.
+    '''
+    return int(binarystring, 2)
+
+
+def HextoInt(hexstring):
+    '''Convert a hex encoded ascii string to integer data.
+    '''
+    return BintoInt(HextoBin(hexstring))
+
+
+def HextoDec(hexstring):
+    '''Convert a hex encoded ascii string to signed decimal data. This assumes
+    that source is the proper length, and the sign bit is the first bit in the
+    first byte of the correct length.
+    For example: HextoDec('F') = -1 and HextoDec('0F') = 15
+    '''
+    if not isinstance(hexstring, str):
+        raise ValueError('string type required')
+    if len(hexstring) == 0:
+        raise ValueError('string is empty')
+
+    sign_bit_mask = 1 << (len(hexstring) * 4 - 1)
+    other_bits_mask = sign_bit_mask - 1
+    value = int(hexstring, 16)
+
+    return -(value & sign_bit_mask) | (value & other_bits_mask)
+
+
+def PayloadChecker(payload):
+    '''Check the integrity of the payload for processing
+    '''
+    if len(payload) != 26:
+        return False, 'Error: Payload length is not equal to 26 characters long.'                  # noqa
+
+    chars = set('1234567890abcdefABCDEF')
+    if not set(payload).issubset(chars):
+        return False, 'Error: Payload has non-hex characters.'
+
+    return True, 'OK'
+
+
+def PayloadParser(payload):
+    '''Take a single payload and parse it into its discrete components
+    but still hex encoded.  These components, when decoded, will become
+    the message count, message type, latitude, longitude, altitude,
+    battery voltage, and a reserved string returned as a dictionary object.
+    '''
+    payloadparsed = {'PayL': payload, 'Byte_0': payload[0:2],
+                     'Byte_1-4': payload[2:10], 'Byte_5-8': payload[10:18],
+                     'Byte_9-10': payload[18:22], 'Byte_11-12': payload[22:]}
+
+    return payloadparsed
+
+
+def LatitudeChecker(lat):
+    '''Check to validate latitude is in the proper range.
+    '''
+    if not -90 <= lat <= 90:
+        return False, 'Error: Latitude value is not in range of +/-90.'
+
+    return True, 'OK'
+
+
+def LongitudeChecker(long):
+    '''Check to validate longitude is in the proper range.
+    '''
+    if not -180 <= long <= 180:
+        return False, 'Error: Longitude value is not in range of +/-180.'
+
+    return True, 'OK'
+
+
+def PayloadDecoder(payload):
+    '''Take a single payload and parse it into a dictionary object with
+    message count, message type, latitude, longitude, altitude,
+    and battery voltage.
+    '''
+    # check the integrity of the payload for processing
+    rtn, mess = PayloadChecker(payload)
+    if not rtn:
+        print(mess)
+        exit(1)
+
+    # parse the payload into its elements
+    payloadparsed = PayloadParser(payload)
+
+    # this is the orginal payload string encoded and unparsed
+    payloaddecoded = {'PayL': payloadparsed['PayL']}
+
+    # first 6 bits of the hex formated single byte string gives you the message count              # noqa
+    x = HextoBin(payloadparsed['Byte_0'])
+    x = x[:6]
+    payloaddecoded.update({'Msg Cnt': BintoInt(x)})
+
+    # last 2 bits of the hex formated single byte string gives you the message type                # noqa
+    x = HextoBin(payloadparsed['Byte_0'])
+    if x[6:] == '00':
+        x = 'GPS'
+    else:
+        x = 'Unknown'
+    payloaddecoded.update({'Msg Type': x})
+
+    # from the hex formated 4 byte string, convert it to a signed decimal number
+    # For Lat/Long, convert from hex to decimal and multiply by 1.0e-7.
+    x = HextoDec(payloadparsed['Byte_1-4']) * 1.0E-7
+    x = round(x, 7)
+    rtn, mess = LatitudeChecker(x)
+    if not rtn:
+        print(mess)
+        exit(1)
+    payloaddecoded.update({'Lat': x})
+
+    # from the hex formated 4 byte string, convert it to a signed decimal number
+    # For Lat/Long, convert from hex to decimal and multiply by 1.0e-7.
+    x = HextoDec(payloadparsed['Byte_5-8']) * 1.0E-7
+    x = round(x, 7)
+    rtn, mess = LongitudeChecker(x)
+    if not rtn:
+        print(mess)
+        exit(1)
+    payloaddecoded.update({'Lon': x})
+
+    # from the hex formated 2 byte string, convert it to a signed decimal number
+    payloaddecoded.update({'Alt': HextoDec(payloadparsed['Byte_9-10'])})
+
+    # The first 10 bits of this hex formated 2 byte string is a ADC reading
+    # for the battery voltage.  Convert the ADC reading to unsigned intiger
+    # use this formula: ( 13.1 * ADC ) / (3.1 * 1023)
+    # maximum value will be  4.22V
+    x = HextoBin(payloadparsed['Byte_11-12'])
+    x = x[:10]
+    x = BintoInt(x) * 13.1 / (3.1 * 1023)
+    payloaddecoded.update({'Batt': round(x, 2)})
+
+    # the last 6 bits of this hex formated 2 byte string isn't currently used
+    x = HextoBin(payloadparsed['Byte_11-12'])
+    x = x[10:]
+    payloaddecoded.update({'Reserved': 'N/A'})
+
+    return payloaddecoded
+
+
+'''--------------------------------------------------------------------------'''
+'''
+DESCRIPTION
+    This module provides unit test routines for the Link Labs GPS Tracker
+    parsing & decoding module.
+
+REFERENCE MATERIALS
+    pytest framework - https://docs.pytest.org/
+
+CREATED BY
+    Jeff Irland (jeffrey.irland@verizon.com) in May 2018
+'''
+
+
+# import the necessary packages
+# import pytest
+
+
+# test cases for HextoBin, HextoInt, and BintoInt
+CASE1 = [{'hex': '10', 'bin': '00010000', 'int': 16}]
+CASE1.append({'hex': '4F5', 'bin': '010011110101', 'int': 1269})
+CASE1.append({'hex': 'A37F', 'bin': '1010001101111111', 'int': 41855})
+CASE1.append({'hex': 'c3a4c3b6c3bc',
+              'bin': '110000111010010011000011101101101100001110111100',
+              'int': 215112425587644})
+CASE1.append({'hex': '3249CD52F37FF57D',
+              'bin': '0011001001001001110011010101001011110011011111111111010101111101',           # noqa
+              'int': 3623653131352536445})
+
+# test cases for PayloadParser and PayloadDecoder
+CASE2 = [{'pl': '10174D9BEBD1C13F1B0021FFE5',
+          'plp': {'PayL': '10174D9BEBD1C13F1B0021FFE5', 'Byte_0': '10',
+                  'Byte_1-4': '174D9BEB', 'Byte_5-8': 'D1C13F1B',
+                  'Byte_9-10': '0021', 'Byte_11-12': 'FFE5'},
+          'pld': {'PayL': '10174D9BEBD1C13F1B0021FFE5', 'Msg Cnt': 4,
+                  'Msg Type': 'GPS', 'Lat': 39.0962155,
+                  'Lon': -77.5864549, 'Alt': 33, 'Batt': 4.23,
+                  'Reserved': 'N/A'}}]
+CASE2.append({'pl': '04174D918ED1C13B40007AFFE5',
+              'plp': {'PayL': '04174D918ED1C13B40007AFFE5', 'Byte_0': '04',
+                      'Byte_1-4': '174D918E', 'Byte_5-8': 'D1C13B40',
+                      'Byte_9-10': '007A', 'Byte_11-12': 'FFE5'},
+              'pld': {'PayL': '04174D918ED1C13B40007AFFE5', 'Msg Cnt': 1,
+                      'Msg Type': 'GPS', 'Lat': 39.0959502, 'Lon': -77.5865536,
+                      'Alt': 122, 'Batt': 4.23, 'Reserved': 'N/A'}})
+CASE2.append({'pl': '14FFFFFFFFFFFFFFFFFFFF0025',
+              'plp': {'PayL': '14FFFFFFFFFFFFFFFFFFFF0025', 'Byte_0': '14',
+                      'Byte_1-4': 'FFFFFFFF', 'Byte_5-8': 'FFFFFFFF',
+                      'Byte_9-10': 'FFFF', 'Byte_11-12': '0025'},
+              'pld': {'PayL': '14FFFFFFFFFFFFFFFFFFFF0025', 'Msg Cnt': 5,
+                      'Msg Type': 'GPS', 'Lat': -1e-07, 'Lon': -1e-07,
+                      'Alt': -1, 'Batt': 0.0, 'Reserved': 'N/A'}})
+
+# test cases for PayloadChecker
+CASE3 = [{'challenge': '04174D8F17D1C139000067E9A5', 'response': True}]
+CASE3.append({'challenge': '04174D8F17D1C13900z067E9A5', 'response': False})
+CASE3.append({'challenge': '30174D8AECD1C13B18006FE5A5D', 'response': False})
+CASE3.append({'challenge': '30174D8AECD1C13B18006FE5A', 'response': False})
+CASE3.append({'challenge': '', 'response': False})
+
+# test cases for LatitudeChecker and LongitudeChecker
+CASE4 =[{'lat': -3.45, 'lat-response': True, 'long': -3.45, 'long-response': True}]                # noqa
+CASE4.append({'lat': 5.45, 'lat-response': True, 'long': 5.45, 'long-response': True})             # noqa
+CASE4.append({'lat': 90, 'lat-response': True, 'long': 180, 'long-response': True})                # noqa
+CASE4.append({'lat': -90, 'lat-response': True, 'long': -180, 'long-response': True})              # noqa
+CASE4.append({'lat': 90.1, 'lat-response': False, 'long': 180.1, 'long-response': False})          # noqa
+CASE4.append({'lat': -90.1, 'lat-response': False, 'long': -180.1, 'long-response': False})        # noqa
+
+
+# execute all the unit tests below
+def test_unit():
+    test_HextoBin()
+    test_BintoInt()
+    test_HextoInt()
+    test_LatLong()
+    test_PayloadChecker()
+    test_PayloadParser()
+    test_PayloadDecoder()
+
+
+def test_PayloadChecker():
+    for i in range(len(CASE3)):
+        value, _ = PayloadChecker(CASE3[i]['challenge'])
+        assert value == CASE3[i]['response']
+
+
+def test_LatLong():
+    for i in range(len(CASE4)):
+        value, _ = LatitudeChecker(CASE4[i]['lat'])
+        assert value == CASE4[i]['lat-response']
+        value, _ = LongitudeChecker(CASE4[i]['long'])
+        assert value == CASE4[i]['long-response']
+
+
+def test_HextoBin():
+    for i in range(len(CASE1)):
+        value = HextoBin(CASE1[i]['hex'])
+        assert value == CASE1[i]['bin']
+
+
+def test_BintoInt():
+    for i in range(len(CASE1)):
+        value = BintoInt(CASE1[i]['bin'])
+        assert value == CASE1[i]['int']
+
+
+def test_HextoInt():
+    for i in range(len(CASE1)):
+        value = HextoInt(CASE1[i]['hex'])
+        assert value == CASE1[i]['int']
+
+
+def test_PayloadParser():
+    for i in range(len(CASE2)):
+        value = PayloadParser(CASE2[i]['pl'])
+        assert value == CASE2[i]['plp']
+
+
+def test_PayloadDecoder():
+    for i in range(len(CASE2)):
+        value = PayloadDecoder(CASE2[i]['pl'])
+        assert value == CASE2[i]['pld']
+
+
+'''--------------------------------------------------------------------------'''
+'''
+DESCRIPTION
+    This script decodes the payload delivered by the Link Labs GPS Tracker.
+
+USAGE
+    python3 tkrdecoder.py [--format table | json ] payload [ payload ... ]
+
+REFERENCE MATERIALS
+    * https://pymotw.com/3/argparse/
+
+CREATED BY
+    Jeff Irland (jeffrey.irland@verizon.com) in May 2018
+'''
+
+
+# import the necessary packages
+import json
+import argparse
+
+
+def LineArgumentParser():
+    '''Construct the commandline argument parser, add the rules for the
+    arguments, and then parse the arguments (found in sys.argv).
+    '''
+    # output format options
+    list = ['table', 'json']
+
+    ap = argparse.ArgumentParser(
+        prog='tkrdecoder',
+        formatter_class=argparse.RawTextHelpFormatter,
+        description='This module parses and decodes the payload delivered by the Link Labs GPS Tracker\n'  # noqa
+        + 'and places it in a JSON object with the following form:'
+        + '\n\n'
+        + '    { \'PayL\': \'10174D9BEBD1C13F1B0021FFE5\', \'Msg Cnt\': 4, \'Msg Type\': \'GPS\',\n'       # noqa
+        + '      \'Lat\': 39.0962155, \'Lon\': -77.5864549, \'Alt\': 33, \'Batt\': 4.23,\n'                # noqa
+        + '      \'Reserved\': \'N/A\' }',                                                                 # noqa
+        epilog='Design details provided by the Link Labs team (www.link-labs.com).')                       # noqa
+
+    ap.add_argument('-f', '--format',
+                    required=False,
+                    choices=list,
+                    default='json',
+                    help='format of the output with allowed values of \'' +
+                    '\', \''.join(list) + '\'.',
+                    metavar='')
+
+    ap.add_argument('payload',
+                    nargs='+',
+                    help='payload(s) from the Link Labs Cat-M1 GPS Tracker')
+
+    ap.add_argument('--version', action='version',
+                    version='%(prog)s 0.2')
+
+    return vars(ap.parse_args())
+
+
+def PrintHeader():
+    print('\t\t' + '\t\tMessage' + '\tMessage' + '\t' + '\t' +
+          '\t' + '\t\t\t  Battery' + '\t')
+    print('Payload' + '\t\t\t\t Count' + '\t Type' + '\tLatitude' +
+          '\tLongitude' + '\tAltitude' + '  Voltage' + '\tReserved')
+
+
+def PrintTable(parsedpayload):
+    print(parsedpayload['PayL'], '\t   ', parsedpayload['Msg Cnt'], '\t  ',
+          parsedpayload['Msg Type'], '\t', parsedpayload['Lat'], '\t',
+          parsedpayload['Lon'], '\t  ', parsedpayload['Alt'], '\t   ',
+          parsedpayload['Batt'], '\t\t  ', parsedpayload['Reserved'], sep='')
+
+
+if __name__ == '__main__':
+    # import sys
+    # manually creating the command line when you are within Jupyter
+    # sys.argv = ['tkrdecoder.py', '-f', 'table',
+    #     '10174D9BEBD1C13F1B0021FFE5', '04174D918ED1C13B40007AFFE5']
+
+    # perfrom unit testing
+    test_unit()
+
+    # parse the commandline arguments
+    args = LineArgumentParser()
+
+    # if doing a table output, print the table headers
+    if args['format'] == 'table':
+        PrintHeader()
+
+    # decode payloads from the commandline
+    for pl in args['payload']:
+        decoded_payload = PayloadDecoder(pl)      # returns dictionary
+
+        # print a formated output of the payload strings
+        if args['format'] == 'table':
+            PrintTable(decoded_payload)           # print table format
+        else:
+            print(json.dumps(decoded_payload))    # print json format
