@@ -20,7 +20,7 @@ $ ./tkrdecoder.py 74174D8902D1C1359D0063DFA5 04174D918ED1C13B40007AFFE5 10174D9B
 ```
 
 ```bash
- $ ./tkrdecoder.py 74174D8902D1C1359D0063DFA5 04174D918ED1C13B40007AFFE5 10174D9BEBD1C13F1B0021FFE5 | jq -C
+$ ./tkrdecoder.py 74174D8902D1C1359D0063DFA5 04174D918ED1C13B40007AFFE5 10174D9BEBD1C13F1B0021FFE5 | jq -C
 {
   "PayL": "74174D8902D1C1359D0063DFA5",
   "Msg Cnt": 29,
@@ -97,6 +97,36 @@ $ ./tkrdecoder.py $(cat example.data)
 {"PayL": "7C174D8C96D1C136AA0064DFA5", "Msg Cnt": 31, "Msg Type": "GPS", "Lat": 39.095823, "Lon": -77.586671, "Alt": 100, "Batt": 3.69, "Reserved": "N/A"}
 {"PayL": "78174D8CE7D1C136D80063DFA5", "Msg Cnt": 30, "Msg Type": "GPS", "Lat": 39.0958311, "Lon": -77.5866664, "Alt": 99, "Batt": 3.69, "Reserved": "N/A"}
 {"PayL": "74174D8902D1C1359D0063DFA5", "Msg Cnt": 29, "Msg Type": "GPS", "Lat": 39.0957314, "Lon": -77.5866979, "Alt": 99, "Batt": 3.69, "Reserved": "N/A"}
+```
+
+# Credentials File
+the credential file `.credentials.json` takes the following form:
+
+```json
+{
+    "device": {
+        "model": "LL-LTE-M-VZN-GPS1",
+        "serial-no": "563803918285313",
+        "imei": "538292916738193",
+        "iccid": "78246937469363869101"
+    },
+    "conductor": {
+        "url": "https://conductor.link-labs.com/",
+        "login": "my@email.com",
+        "password": "first-password",
+        "node-id": "0-0-0005732-4bc63f71e",
+        "app-name": "Application",
+        "app-token": "c34ef6cac38e4468cb30",
+        "network-token": "3eb582f1"
+        },
+    "airfinder": {
+        "url": "https://app.airfinder.com/customerwideadmin",
+        "login": "my-other@email.com",
+        "password": "second-password",
+        "tag": "$303$0-0-000e453-1be56eb2f",
+        "app-token": "c42z8e7372ca8362cd10"
+    }
+}
 ```
 
 # Testing Tools

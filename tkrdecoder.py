@@ -165,7 +165,7 @@ def PayloadDecoder(payload):
     # The first 10 bits of this hex formated 2 byte string is a ADC reading
     # for the battery voltage.  Convert the ADC reading to unsigned intiger
     # use this formula: ( 13.1 * ADC ) / (3.1 * 1023)
-    # maximum value will be  4.22V
+    # maximum value will be  4.23V
     x = HextoBin(payloadparsed['Byte_11-12'])
     x = x[:10]
     x = BintoInt(x) * 13.1 / (3.1 * 1023)
@@ -359,6 +359,10 @@ def LineArgumentParser():
 
     return vars(ap.parse_args())
 
+''' Replace with Text Tables
+http://www.deanishe.net/snippet/py-text-table/
+https://stackoverflow.com/questions/39032720/formatting-lists-into-columns-of-a-table-output-python-3
+'''
 
 def PrintHeader():
     print('\t\t' + '\t\tMessage' + '\tMessage' + '\t' + '\t' +

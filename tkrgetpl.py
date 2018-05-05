@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 '''--------------------------------------------------------------------------'''
 '''
@@ -12,6 +12,7 @@ USAGE
 REFERENCE MATERIALS
     * https://pymotw.com/3/argparse/
     * https://www.link-labs.com/documentation/software-downloads-conductor-downloads               # noqa
+    * https://www.youtube.com/watch?v=eirjjyP2qcQ
 
 CREATED BY
     Jeff Irland (jeffrey.irland@verizon.com) in May 2018
@@ -43,14 +44,10 @@ def GetCredentials():
 
     import json
 
-    CREDPATH = '/home/jeff/src/link-labs-gps-tracker/.credentials.json'
+    CREDPATH = '/home/jeff/src/ll-tracker/.credentials.json'
 
     with open(CREDPATH) as json_data:
         cred = json.load(json_data)
-
-    print("cred =", cred)
-    print("cred['device'] =", cred['device'])
-    print("cred['device']['imei'] =", cred['device']['imei'])
 
     return cred
 
@@ -86,20 +83,44 @@ def LineArgumentParser():
 
 
 if __name__ == '__main__':
+    import datetime
+
     cred = GetCredentials()
 
     account = conductor.ConductorAccount(cred['conductor']['login'],
                                          cred['conductor']['password'])
-    node = account.get_module(cred['node-address'])
+    node = account.get_module(cred['conductor']['node-address'])
+    print("account =", account)
+    print("node =", node)
+
+    # start_time and stop_time are Python 'datetime.datetime' objects
+    tdelta = datetime.timedelta(weeks=0, days=1, hours=0, minutes=0, seconds=0,
+                                microseconds=0, milliseconds=0)
+    stop_time = datetime.datetime.now()
+    start_time = stop_time - tdelta
+    # start_time = datetime.datetime.now()
+    # stop_time = start_time - tdelta
+    print("tdelta =", tdelta)
+    print("stop_time =", stop_time)
+    print("start_time =", start_time)
 
     # list of all messages received from that node in the last 5000 minutes
-    messages = node.get_recent_messages(mins_back=60)
-    # messages = node.get_recent_messages(10)
+    # messages = node.get_recent_messages(mins_back=24*60)
+    # print("messages =", messages)
+
+    # pull a list of all uplink messages from a particular node
+    # in the time interval between start_time and stop_time
+    # messages = node.get_messages_time_range(start_time, stop_time)
+    # print("messages =", messages)
 
     # alternatively
     # where start_time and stop_time are Python 'datetime.datetime' objects
     # messages = node.get_messages_time_range(start_time, stop_time)
-    print(messages)
+
+    application = account.get_application_token(cred['conductor']['app-token'])
+    print('application token =', cred['conductor']['app-token'])
+    messages = application.get_messages_time_range(start_time, stop_time)
+    print("messages =", messages)
 
     # parsed = json.loads(messages)
     # print(json.dumps(parsed, indent=4, sort_keys=True))
