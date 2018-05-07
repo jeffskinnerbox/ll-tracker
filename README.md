@@ -1,8 +1,35 @@
 # Warning
-Very early version of the tool.
-Only `tkrdecoder.py` is working right now.
+These are very early version of the
+the commandline tools `tkrdecoder.py` and `tkrgetpl.py`.
+Also, you will need Link Labs credentials to [Conductor](https://conductor.link-labs.com/).
 
-# Usage Examples
+# tkrdecoder.py
+Two types of payloads are produced by the tracker: GPS message and Registration message.
+Only the GPS type message is processed at this time.
+
+```bash
+$ ./tkrdecoder.py --help
+usage: tkrdecoder [-h] [-f] [--version] payload [payload ...]
+
+This module parses and decodes the payload delivered by the Link Labs GPS Tracker
+and places it in a JSON object with the following form:
+
+    { 'PayL': '10174D9BEBD1C13F1B0021FFE5', 'Msg Cnt': 4, 'Msg Type': 'GPS',
+      'Lat': 39.0962155, 'Lon': -77.5864549, 'Alt': 33, 'Batt': 4.23,
+      'Reserved': 'N/A' }
+
+positional arguments:
+  payload         payload(s) from the Link Labs Cat-M1 GPS Tracker
+
+optional arguments:
+  -h, --help      show this help message and exit
+  -f , --format   format of the output with allowed values of 'table', 'json'.
+  --version       show program's version number and exit
+
+Design details provided by the Link Labs team (www.link-labs.com).
+```
+
+## Usage Examples
 ```bash
 $ ./tkrdecoder.py -f table 74174D8902D1C1359D0063DFA5 04174D918ED1C13B40007AFFE5 10174D9BEBD1C13F1B0021FFE5
 			            	Message	Message						              Battery
@@ -99,8 +126,38 @@ $ ./tkrdecoder.py $(cat example.data)
 {"PayL": "74174D8902D1C1359D0063DFA5", "Msg Cnt": 29, "Msg Type": "GPS", "Lat": 39.0957314, "Lon": -77.5866979, "Alt": 99, "Batt": 3.69, "Reserved": "N/A"}
 ```
 
-# Credentials File
-the credential file `.credentials.json` takes the following form:
+# tkrgetpl.py
+Two types of payloads are produced by the tracker: GPS message and Registration message.
+Only the GPS type message is processed at this time.
+
+```bash
+$ ./tkrgetpl.py --help
+usage: tkrgetpl [-h] [-f] [-s START] [-S STOP] [-c CREDENTIALS] [--version]
+
+This script queries for the Link Labs GPS Tracker data. This information is
+stored on the Link Labs Conductor platform.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -f , --format         format of the output with allowed values of
+                        'unformatted', 'table', 'json'.
+  -s START, --start START
+                        start time for messages (default is 3 days prior to
+                        now)
+  -S STOP, --stop STOP  stop time for messages (default time is now)
+  -c CREDENTIALS, --credentials CREDENTIALS
+                        file where credentials are stored.
+  --version             show program's version number and exit
+
+Design details provided by the Link Labs team (www.link-labs.com).
+```
+
+## Credentials File
+The `tkrgetpl.py` needs login/password to pull the payload data from Conductor.
+The tool looks for these credentials within
+`/home/jeff/src/ll-tracker` by default.
+You can modify where to find the credentials via the command line option `--credentials` (aka `-c`).
+The credential file `.credentials.json` takes the following form:
 
 ```json
 {
@@ -129,6 +186,34 @@ the credential file `.credentials.json` takes the following form:
 }
 ```
 
-# Testing Tools
-* [PYTHON TESTING 101: PYTEST](https://automationpanda.com/2017/03/14/python-testing-101-pytest/)
-* [pytest](https://docs.pytest.org/en/latest/)
+## Usage Examples
+```bash
+$ ./tkrgetpl.py -s 2018-04-01T00:00:00 -S 2018-05-08T00:00:00 -f json
+data['resultCount'] = 108
+data['moreRecordsExist'] = False
+data['nextPageId'] = None
+{"time": "2018-05-07T16:48:52.213", "PayL": "10174D8D96D1C133800087DAA5"}
+{"time": "2018-05-07T16:42:30.798", "PayL": "0C174D8C87D1C13349008FDAA5"}
+{"time": "2018-05-07T16:40:57.592", "PayL": "01101000001DB8"}
+{"time": "2018-05-07T15:41:57.481", "PayL": "30174D8CA2D1C135730080E1A5"}
+{"time": "2018-05-07T15:21:57.571", "PayL": "1C174D90FAD1C13203005AE3A5"}
+{"time": "2018-05-07T15:10:38.031", "PayL": "10174D8CBFD1C13C6B0070E425"}
+{"time": "2018-05-07T14:59:54.232", "PayL": "04174D8C13D1C13754007FE4A5"}
+{"time": "2018-05-07T14:59:04.043", "PayL": "01101000001E50"}
+{"time": "2018-05-07T14:50:48.584", "PayL": "20174D9041D1C13DB80076E5A5"}
+{"time": "2018-05-07T14:37:21.983", "PayL": "10174D8E00D1C136290085E8A5"}
+{"time": "2018-05-07T14:21:57.080", "PayL": "04174D8DF2D1C138FD0087E8A5"}
+{"time": "2018-05-07T14:20:50.931", "PayL": "01101000001E78"}
+{"time": "2018-05-07T14:09:46.920", "PayL": "01101000001FFC"}
+{"time": "2018-05-07T14:09:17.145", "PayL": "04174DA11BD1C11D4B0021FFE5"}
+{"time": "2018-05-07T14:08:21.571", "PayL": "01101000001FFC"}
+{"time": "2018-05-03T17:36:29.556", "PayL": "01101000001E98"}
+{"time": "2018-05-01T21:54:46.290", "PayL": "04174D8B40D1C13BBD0078FFE5"}
+{"time": "2018-05-01T21:52:52.275", "PayL": "01101000001FFC"}
+{"time": "2018-05-01T21:44:35.003", "PayL": "30174E6EBCD1C07F950021E5A5"}
+  .
+  .
+  .
+  .
+```
+
