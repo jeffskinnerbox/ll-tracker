@@ -65,32 +65,6 @@ def HextoDec(hexstring):
     return -(value & sign_bit_mask) | (value & other_bits_mask)
 
 
-def PayloadChecker(payload):
-    '''Check the integrity of the payload for processing
-    '''
-    if len(payload) != 26:
-        return False, 'Error: Payload length is not equal to 26 characters long.'                  # noqa
-
-    chars = set('1234567890abcdefABCDEF')
-    if not set(payload).issubset(chars):
-        return False, 'Error: Payload has non-hex characters.'
-
-    return True, 'OK'
-
-
-def PayloadParser(payload):
-    '''Take a single payload and parse it into its discrete components
-    but still hex encoded.  These components, when decoded, will become
-    the message count, message type, latitude, longitude, altitude,
-    battery voltage, and a reserved string returned as a dictionary object.
-    '''
-    payloadparsed = {'PayL': payload, 'Byte_0': payload[0:2],
-                     'Byte_1-4': payload[2:10], 'Byte_5-8': payload[10:18],
-                     'Byte_9-10': payload[18:22], 'Byte_11-12': payload[22:]}
-
-    return payloadparsed
-
-
 def LatitudeChecker(lat):
     '''Check to validate latitude is in the proper range.
     '''
@@ -109,19 +83,51 @@ def LongitudeChecker(long):
     return True, 'OK'
 
 
-def PayloadDecoder(payload):
-    '''Take a single payload and parse it into a dictionary object with
-    message count, message type, latitude, longitude, altitude,
+def PayloadChecker(payload):
+    '''Check the integrity of the payload for processing
+    '''
+    if len(payload) != 14 and len(payload) != 26:
+        return False, 'Error: Payload length is not equal to 14 or 26 characters long.'            # noqa
+
+    chars = set('1234567890abcdefABCDEF')
+    if not set(payload).issubset(chars):
+        return False, 'Error: Payload has non-hex characters.'
+
+    # last 2 bits of the hex formated single byte string gives you the message type                # noqa
+    x = HextoBin(payload[0:2])
+    if x[6:] != '00' and x[6:] != '01':
+        return False, 'Error: Payload doesn\'t have the right message type.'
+
+    return True, 'OK'
+
+
+def GPSPayloadParser(payload):
+    '''Take a single payload and parse it into its discrete components
+    but still hex encoded.  These components, when decoded, will become
+    the message count, message type, latitude, longitude, altitude,
+    battery voltage, and a reserved string returned as a dictionary object.
+    '''
+    payloadparsed = {'PayL': payload, 'Byte_0': payload[0:2],
+                     'Byte_1-4': payload[2:10], 'Byte_5-8': payload[10:18],
+                     'Byte_9-10': payload[18:22], 'Byte_11-12': payload[22:]}
+
+    return payloadparsed
+
+
+def RegMessDecoder(payload):
+    '''Registration message
+    '''
+    return True, 'Warning: Reistration messages are being ignored. Function needs to be built.', None
+
+
+
+def GPSMessDecoder(payload):
+    '''Take a single GPS type payload and parse it into a dictionary object
+    with message count, message type, latitude, longitude, altitude,
     and battery voltage.
     '''
-    # check the integrity of the payload for processing
-    rtn, mess = PayloadChecker(payload)
-    if not rtn:
-        print(mess)
-        exit(1)
-
     # parse the payload into its elements
-    payloadparsed = PayloadParser(payload)
+    payloadparsed = GPSPayloadParser(payload)
 
     # this is the orginal payload string encoded and unparsed
     payloaddecoded = {'PayL': payloadparsed['PayL']}
@@ -145,8 +151,7 @@ def PayloadDecoder(payload):
     x = round(x, 7)
     rtn, mess = LatitudeChecker(x)
     if not rtn:
-        print(mess)
-        exit(1)
+        return rtn, mess, payloaddecoded
     payloaddecoded.update({'Lat': x})
 
     # from the hex formated 4 byte string, convert it to a signed decimal number
@@ -155,8 +160,7 @@ def PayloadDecoder(payload):
     x = round(x, 7)
     rtn, mess = LongitudeChecker(x)
     if not rtn:
-        print(mess)
-        exit(1)
+        return rtn, mess, payloaddecoded
     payloaddecoded.update({'Lon': x})
 
     # from the hex formated 2 byte string, convert it to a signed decimal number
@@ -176,7 +180,25 @@ def PayloadDecoder(payload):
     x = x[10:]
     payloaddecoded.update({'Reserved': 'N/A'})
 
-    return payloaddecoded
+    return True, 'OK', payloaddecoded
+
+
+def PayloadDecoder(payload):
+    # check the integrity of the payload for processing
+    rtn, mess = PayloadChecker(payload)
+    if not rtn:
+        return rtn, mess, None
+
+    # last 2 bits of the hex formated single byte string gives you the message type                # noqa
+    x = HextoBin(payload[0:2])
+    if x[6:] == '00':
+        rtn, mess, value = GPSMessDecoder(payload)
+        return rtn, mess, value
+    elif x[6:] == '01':
+        rtn, mess, value = RegMessDecoder(payload)
+        return rtn, mess, value
+    else:
+        return False, 'Error: Unknown message type.', None
 
 
 '''--------------------------------------------------------------------------'''
@@ -208,7 +230,7 @@ CASE1.append({'hex': '3249CD52F37FF57D',
               'bin': '0011001001001001110011010101001011110011011111111111010101111101',           # noqa
               'int': 3623653131352536445})
 
-# test cases for PayloadParser and PayloadDecoder
+# test cases for GPSPayloadParser and PayloadDecoder
 CASE2 = [{'pl': '10174D9BEBD1C13F1B0021FFE5',
           'plp': {'PayL': '10174D9BEBD1C13F1B0021FFE5', 'Byte_0': '10',
                   'Byte_1-4': '174D9BEB', 'Byte_5-8': 'D1C13F1B',
@@ -237,6 +259,10 @@ CASE3 = [{'challenge': '04174D8F17D1C139000067E9A5', 'response': True}]
 CASE3.append({'challenge': '04174D8F17D1C13900z067E9A5', 'response': False})
 CASE3.append({'challenge': '30174D8AECD1C13B18006FE5A5D', 'response': False})
 CASE3.append({'challenge': '30174D8AECD1C13B18006FE5A', 'response': False})
+CASE3.append({'challenge': '01101000001FFC', 'response': True})
+CASE3.append({'challenge': '011010000001FFC', 'response': False})
+CASE3.append({'challenge': '0110100001FFC', 'response': False})
+CASE3.append({'challenge': '1234567890ABCD', 'response': False})
 CASE3.append({'challenge': '', 'response': False})
 
 # test cases for LatitudeChecker and LongitudeChecker
@@ -255,7 +281,7 @@ def test_unit():
     test_HextoInt()
     test_LatLong()
     test_PayloadChecker()
-    test_PayloadParser()
+    test_GPSPayloadParser()
     test_PayloadDecoder()
 
 
@@ -291,15 +317,15 @@ def test_HextoInt():
         assert value == CASE1[i]['int']
 
 
-def test_PayloadParser():
+def test_GPSPayloadParser():
     for i in range(len(CASE2)):
-        value = PayloadParser(CASE2[i]['pl'])
+        value = GPSPayloadParser(CASE2[i]['pl'])
         assert value == CASE2[i]['plp']
 
 
 def test_PayloadDecoder():
     for i in range(len(CASE2)):
-        value = PayloadDecoder(CASE2[i]['pl'])
+        rtn, mess, value = PayloadDecoder(CASE2[i]['pl'])
         assert value == CASE2[i]['pld']
 
 
@@ -359,10 +385,6 @@ def LineArgumentParser():
 
     return vars(ap.parse_args())
 
-''' Replace with Text Tables
-http://www.deanishe.net/snippet/py-text-table/
-https://stackoverflow.com/questions/39032720/formatting-lists-into-columns-of-a-table-output-python-3
-'''
 
 def PrintHeader():
     print('\t\t' + '\t\tMessage' + '\tMessage' + '\t' + '\t' +
@@ -379,12 +401,7 @@ def PrintTable(parsedpayload):
 
 
 if __name__ == '__main__':
-    # import sys
-    # manually creating the command line when you are within Jupyter
-    # sys.argv = ['tkrdecoder.py', '-f', 'table',
-    #     '10174D9BEBD1C13F1B0021FFE5', '04174D918ED1C13B40007AFFE5']
-
-    # perfrom unit testing
+    # perform unit testing
     test_unit()
 
     # parse the commandline arguments
@@ -396,10 +413,13 @@ if __name__ == '__main__':
 
     # decode payloads from the commandline
     for pl in args['payload']:
-        decoded_payload = PayloadDecoder(pl)      # returns dictionary
+        rtn, mess, decoded_payload = PayloadDecoder(pl)    # returns dictionary
+        if not rtn:
+            print(mess + '  Payload = ' + pl)
+            exit(1)
 
         # print a formated output of the payload strings
         if args['format'] == 'table':
-            PrintTable(decoded_payload)           # print table format
+            PrintTable(decoded_payload)                    # print table format
         else:
-            print(json.dumps(decoded_payload))    # print json format
+            print(json.dumps(decoded_payload))             # print json format
