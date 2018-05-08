@@ -86,23 +86,32 @@ def LongitudeChecker(long):
 def PayloadChecker(payload):
     '''Check the integrity of the payload for processing
     '''
+    # check the character length of the payload
     if len(payload) != 14 and len(payload) != 26:
         return False, 'Error: Payload length is not equal to 14 or 26 characters long.'            # noqa
 
+    # make sure only hexidcimal numbers are used
     chars = set('1234567890abcdefABCDEF')
     if not set(payload).issubset(chars):
         return False, 'Error: Payload has non-hex characters.'
 
+    # check that you have a valid message type
     # last 2 bits of the hex formated single byte string gives you the message type                # noqa
     x = HextoBin(payload[0:2])
     if x[6:] != '00' and x[6:] != '01':
         return False, 'Error: Payload doesn\'t have the right message type.'
 
+    # check the rolling message counter, range 0-63 (inclusive)
+    x = HextoBin(payload[0:2])
+    x = BintoInt(x[:6])
+    if x < 0 or x > 63:
+        return False, 'Error: Payload message count is out of range.'
+
     return True, 'OK'
 
 
 def GPSPayloadParser(payload):
-    '''Take a single payload and parse it into its discrete components
+    '''Take a single GPS payload and parse it into its discrete components
     but still hex encoded.  These components, when decoded, will become
     the message count, message type, latitude, longitude, altitude,
     battery voltage, and a reserved string returned as a dictionary object.
@@ -115,10 +124,58 @@ def GPSPayloadParser(payload):
 
 
 def RegMessDecoder(payload):
-    '''Registration message
+    '''Take a single Registration type payload and parse it into a
+    dictionary object with message count, message type, hardware ID,
+    software version major, software version minor, software version tag,
+    and battery voltage.
     '''
-    return True, 'Warning: Reistration messages are being ignored. Function needs to be built.', None
+    # parse the payload into its elements
+    payloadbinary = HextoBin(payload)
 
+    # this is the orginal payload string encoded and unparsed
+    payloaddecoded = {'PayL': payload}
+
+    # first 6 bits of the first byte gives you the message count
+    x = payloadbinary[:6]
+    payloaddecoded.update({'Msg Cnt': BintoInt(x)})
+
+    # last 2 bits of the first byte gives you the message type
+    if payloadbinary[6:8] == '01':
+        x = 'Reg'
+    else:
+        mess = 'Error: Wrong message type.  Should be \'Registration\''
+        return False, mess, None
+    payloaddecoded.update({'Msg Type': x})
+
+    # bits 8 to 12 give hardware id
+    x = payloadbinary[8:12]
+    payloaddecoded.update({'Hardware ID': BintoInt(x)})
+
+    # bits 12 to 20 give you software version major index
+    x = payloadbinary[12:20]
+    payloaddecoded.update({'Software Major': BintoInt(x)})
+
+    # bits 20 to 28 give you software version minor index
+    x = payloadbinary[20:28]
+    payloaddecoded.update({'Software Minor': BintoInt(x)})
+
+    # bits 20 to 44 give you software version tag index
+    x = payloadbinary[28:44]
+    payloaddecoded.update({'Software Tag': BintoInt(x)})
+
+    # bits 44 to 54 give you battery voltage
+    # This is a ADC reading for the battery voltage.  Convert the ADC reading
+    # to unsigned integer use this formula: ( 13.1 * ADC ) / (3.1 * 1023)
+    # maximum value will be  4.23V
+    x = payloadbinary[44:54]
+    x = BintoInt(x) * 13.1 / (3.1 * 1023)
+    payloaddecoded.update({'Batt': round(x, 2)})
+
+    # bits 54 to 56 give reserved field
+    x = payloadbinary[54:56]
+    payloaddecoded.update({'Reserved': 'N/A'})
+
+    return True, 'OK', payloaddecoded
 
 
 def GPSMessDecoder(payload):
@@ -129,7 +186,7 @@ def GPSMessDecoder(payload):
     # parse the payload into its elements
     payloadparsed = GPSPayloadParser(payload)
 
-    # this is the orginal payload string encoded and unparsed
+    # this is the original payload string encoded and unparsed
     payloaddecoded = {'PayL': payloadparsed['PayL']}
 
     # first 6 bits of the hex formated single byte string gives you the message count              # noqa
@@ -137,15 +194,15 @@ def GPSMessDecoder(payload):
     x = x[:6]
     payloaddecoded.update({'Msg Cnt': BintoInt(x)})
 
-    # last 2 bits of the hex formated single byte string gives you the message type                # noqa
+    # last 2 bits of the hex formatted single byte string gives you the message type               # noqa
     x = HextoBin(payloadparsed['Byte_0'])
     if x[6:] == '00':
         x = 'GPS'
     else:
-        x = 'Unknown'
+        return False, 'Error: Wrong message type.  Should be \'GPS\'', None
     payloaddecoded.update({'Msg Type': x})
 
-    # from the hex formated 4 byte string, convert it to a signed decimal number
+    # from the hex formatted 4 byte string, convert it to a signed decimal
     # For Lat/Long, convert from hex to decimal and multiply by 1.0e-7.
     x = HextoDec(payloadparsed['Byte_1-4']) * 1.0E-7
     x = round(x, 7)
@@ -154,7 +211,7 @@ def GPSMessDecoder(payload):
         return rtn, mess, payloaddecoded
     payloaddecoded.update({'Lat': x})
 
-    # from the hex formated 4 byte string, convert it to a signed decimal number
+    # from the hex formatted 4 byte string, convert it to a signed decimal
     # For Lat/Long, convert from hex to decimal and multiply by 1.0e-7.
     x = HextoDec(payloadparsed['Byte_5-8']) * 1.0E-7
     x = round(x, 7)
@@ -163,11 +220,11 @@ def GPSMessDecoder(payload):
         return rtn, mess, payloaddecoded
     payloaddecoded.update({'Lon': x})
 
-    # from the hex formated 2 byte string, convert it to a signed decimal number
+    # from the hex formatted 2 byte string, convert it to a signed decimal
     payloaddecoded.update({'Alt': HextoDec(payloadparsed['Byte_9-10'])})
 
-    # The first 10 bits of this hex formated 2 byte string is a ADC reading
-    # for the battery voltage.  Convert the ADC reading to unsigned intiger
+    # The first 10 bits of this hex formatted 2 byte string is a ADC reading
+    # for the battery voltage.  Convert the ADC reading to unsigned integer
     # use this formula: ( 13.1 * ADC ) / (3.1 * 1023)
     # maximum value will be  4.23V
     x = HextoBin(payloadparsed['Byte_11-12'])
@@ -175,7 +232,7 @@ def GPSMessDecoder(payload):
     x = BintoInt(x) * 13.1 / (3.1 * 1023)
     payloaddecoded.update({'Batt': round(x, 2)})
 
-    # the last 6 bits of this hex formated 2 byte string isn't currently used
+    # the last 6 bits of this hex formatted 2 byte string isn't currently used
     x = HextoBin(payloadparsed['Byte_11-12'])
     x = x[10:]
     payloaddecoded.update({'Reserved': 'N/A'})
@@ -253,6 +310,14 @@ CASE2.append({'pl': '14FFFFFFFFFFFFFFFFFFFF0025',
               'pld': {'PayL': '14FFFFFFFFFFFFFFFFFFFF0025', 'Msg Cnt': 5,
                       'Msg Type': 'GPS', 'Lat': -1e-07, 'Lon': -1e-07,
                       'Alt': -1, 'Batt': 0.0, 'Reserved': 'N/A'}})
+CASE5 = [{'pl': '01101000001EC8',
+          'pld': {"PayL": "01101000001EC8", "Msg Cnt": 0, "Msg Type": "Reg",
+                  "Hardware ID": 1, "Software Major": 1, "Software Minor": 0,
+                  "Software Tag": 1, "Batt": 3.91, "Reserved": "N/A"}}]
+CASE5.append({'pl': '01101000001DB8',
+              'pld': {"PayL": "01101000001DB8", "Msg Cnt": 0, "Msg Type": "Reg",
+                      "Hardware ID": 1, "Software Major": 1, "Software Minor": 0,                  # noqa
+                      "Software Tag": 1, "Batt": 3.63, "Reserved": "N/A"}})
 
 # test cases for PayloadChecker
 CASE3 = [{'challenge': '04174D8F17D1C139000067E9A5', 'response': True}]
@@ -328,6 +393,9 @@ def test_PayloadDecoder():
         rtn, mess, value = PayloadDecoder(CASE2[i]['pl'])
         assert value == CASE2[i]['pld']
 
+    for i in range(len(CASE5)):
+        rtn, mess, value = PayloadDecoder(CASE5[i]['pl'])
+        assert value == CASE5[i]['pld']
 
 '''--------------------------------------------------------------------------'''
 '''
@@ -355,7 +423,8 @@ def LineArgumentParser():
     arguments, and then parse the arguments (found in sys.argv).
     '''
     # output format options
-    list = ['table', 'json']
+    list1 = ['table', 'json']
+    list2 = ['gps', 'reg', 'all']
 
     ap = argparse.ArgumentParser(
         prog='tkrdecoder',
@@ -370,10 +439,18 @@ def LineArgumentParser():
 
     ap.add_argument('-f', '--format',
                     required=False,
-                    choices=list,
+                    choices=list1,
                     default='json',
                     help='format of the output with allowed values of \'' +
-                    '\', \''.join(list) + '\'.',
+                    '\', \''.join(list1) + '\'.',
+                    metavar='')
+
+    ap.add_argument('-m', '--message',
+                    required=False,
+                    choices=list2,
+                    default='gps',
+                    help='message types inthe output with allowed values of \'' +                  # noqa
+                    '\', \''.join(list2) + '\'.',
                     metavar='')
 
     ap.add_argument('payload',

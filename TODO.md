@@ -1,7 +1,6 @@
 # ToDo List
 List of things that have yet to be accomplished:
 
-1. **Include Parsing of Registration Message** - your currently only parsing GPS messages
 1. **Make More Pythonic** - Proper use of `if __name__ == '__main__':`.
 1. **Support Muli-Page Output** - The query done by `rtkgetpl.py` could have multiple pages of data.
 Need to implement functionality to support this.
@@ -29,3 +28,5 @@ These things have already been done:
 
 1. **Use ISO Time Format** - Original implementation used Python's `datetime` object format for time input.
 Change this to support the more familiar [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) time format.
+1. **Include Parsing of Registration Message** - your currently only parsing GPS messages
+
