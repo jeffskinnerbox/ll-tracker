@@ -223,7 +223,7 @@ def LineArgumentParser():
                     help='file where credentials are stored.')
 
     ap.add_argument('--version', action='version',
-                    version='%(prog)s 0.2')
+                    version='%(prog)s 0.3')
 
     # check the arguments passed for validity
     args = vars(ap.parse_args())

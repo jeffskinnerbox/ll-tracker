@@ -458,7 +458,7 @@ def LineArgumentParser():
                     help='payload(s) from the Link Labs Cat-M1 GPS Tracker')
 
     ap.add_argument('--version', action='version',
-                    version='%(prog)s 0.2')
+                    version='%(prog)s 0.3')
 
     return vars(ap.parse_args())
 
