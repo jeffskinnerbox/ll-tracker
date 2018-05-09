@@ -19,6 +19,7 @@ CREATED BY
 
 import re
 import json
+import requests
 
 
 # regular expression for ISO8601 format validation
@@ -149,7 +150,6 @@ if __name__ == '__main__':
     # import the necessary packages
     import argparse
     import datetime
-    import requests
 
     # path to where the credentials are stored
     CREDPATH = '/home/jeff/src/ll-tracker/.credentials.json'
@@ -246,6 +246,8 @@ if __name__ == '__main__':
 
     # format the recieved json text as a python list object
     data = json.loads(r.text)
+
+    # for debugging ... remove later
     print("data['resultCount'] =", data['resultCount'])
     print("data['moreRecordsExist'] =", data['moreRecordsExist'])
     print("data['nextPageId'] =", data['nextPageId'])
