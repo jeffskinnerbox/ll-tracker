@@ -1,8 +1,6 @@
 # ToDo List
 List of things that have yet to be accomplished:
 
-1. **Combine tkrdecoder.py and tkrgetpl.py** Make these two program act work together
-in a single program (aka import tkrdecoder.py)
 1. **Make More Pythonic** - Proper use of `if __name__ == '__main__':`, use classes,
 [magic methods](https://opensource.com/article/18/4/elegant-solutions-everyday-python-problems), etc.
 1. **Support Muli-Page Output** - The query done by `rtkgetpl.py` could have multiple pages of data.
@@ -32,4 +30,6 @@ These things have already been done:
 1. **Use ISO Time Format** - Original implementation used Python's `datetime` object format for time input.
 Change this to support the more familiar [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) time format.
 1. **Include Parsing of Registration Message** - your currently only parsing GPS messages
+1. **Combine tkrdecoder.py and tkrgetpl.py** Make these two program work together
+in a single program (aka import tkrdecoder.py)
 

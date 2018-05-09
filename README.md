@@ -5,7 +5,6 @@ Also, you will need Link Labs credentials to [Conductor](https://conductor.link-
 
 # tkrdecoder.py
 Two types of payloads are produced by the tracker: GPS message and Registration message.
-Only the GPS type message is processed at this time.
 
 ```bash
 $ ./tkrdecoder.py --help
@@ -128,7 +127,6 @@ $ ./tkrdecoder.py $(cat example.data)
 
 # tkrgetpl.py
 Two types of payloads are produced by the tracker: GPS message and Registration message.
-Only the GPS type message is processed at this time.
 
 ```bash
 $ ./tkrgetpl.py --help
@@ -217,3 +215,70 @@ data['nextPageId'] = None
   .
 ```
 
+# tkrstatus.py
+Two types of payloads are produced by the tracker: GPS message and Registration message.
+This command both queries Conductor for data and decodes the returned payload.
+
+```bash
+$ ./tkrstatus.py --help
+usage: tkrstatus [-h] [-f] [-s START] [-S STOP] [-c CREDENTIALS] [--version]
+
+This script queries for the Link Labs GPS Tracker data. This information is
+stored on the Link Labs Conductor platform.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -f , --format         format of the output with allowed values of
+                        'unformatted', 'table', 'json'.
+  -s START, --start START
+                        start time for messages (default is 3 days prior to
+                        now)
+  -S STOP, --stop STOP  stop time for messages (default time is now)
+  -c CREDENTIALS, --credentials CREDENTIALS
+                        file where credentials are stored.
+  --version             show program's version number and exit
+
+Design details provided by the Link Labs team (www.link-labs.com).
+```
+
+## Usage Examples
+```bash
+$ ./tkrstatus.py -f json | grep GPS | jq -C '.'
+{
+  "Time": "2018-05-08T21:48:21.513",
+  "PayL": "38174D900DD1C135D90072D0A5",
+  "Msg Cnt": 14,
+  "Msg Type": "GPS",
+  "Lat": 39.0959117,
+  "Lon": -77.5866919,
+  "Alt": 114,
+  "Batt": 3.45,
+  "Reserved": "N/A"
+}
+{
+  "Time": "2018-05-08T21:33:42.317",
+  "PayL": "2C174D8C16D1C1368C0074D125",
+  "Msg Cnt": 11,
+  "Msg Type": "GPS",
+  "Lat": 39.0958102,
+  "Lon": -77.586674,
+  "Alt": 116,
+  "Batt": 3.45,
+  "Reserved": "N/A"
+}
+{
+  "Time": "2018-05-08T21:25:26.540",
+  "PayL": "24174D929BD1C132110057D1A5",
+  "Msg Cnt": 9,
+  "Msg Type": "GPS",
+  "Lat": 39.0959771,
+  "Lon": -77.5867887,
+  "Alt": 87,
+  "Batt": 3.46,
+  "Reserved": "N/A"
+}
+  .
+  .
+  .
+  .
+```
