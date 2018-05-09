@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-'''--------------------------------------------------------------------------'''
-'''
+
+'''-----------------------------------------------------------------------------
 DESCRIPTION
     This module parses and decodes the payload delivered by the Link Labs
     GPS Tracker and places it in a Python dictionary object with the
@@ -17,9 +17,7 @@ REFERENCE MATERIALS
 
 CREATED BY
     Jeff Irland (jeffrey.irland@verizon.com) in May 2018
-'''
-
-
+-----------------------------------------------------------------------------'''
 # mapping of hex characters to binary repensetation in ascii
 hex2bin_map = {'0': '0000', '1': '0001', '2': '0010', '3': '0011', '4': '0100',
                '5': '0101', '6': '0110', '7': '0111', '8': '1000', '9': '1001',
@@ -258,8 +256,7 @@ def PayloadDecoder(payload):
         return False, 'Error: Unknown message type.', None
 
 
-'''--------------------------------------------------------------------------'''
-'''
+'''-----------------------------------------------------------------------------
 DESCRIPTION
     This module provides unit test routines for the Link Labs GPS Tracker
     parsing & decoding module.
@@ -269,9 +266,7 @@ REFERENCE MATERIALS
 
 CREATED BY
     Jeff Irland (jeffrey.irland@verizon.com) in May 2018
-'''
-
-
+-----------------------------------------------------------------------------'''
 # import the necessary packages
 # import pytest
 
@@ -310,6 +305,8 @@ CASE2.append({'pl': '14FFFFFFFFFFFFFFFFFFFF0025',
               'pld': {'PayL': '14FFFFFFFFFFFFFFFFFFFF0025', 'Msg Cnt': 5,
                       'Msg Type': 'GPS', 'Lat': -1e-07, 'Lon': -1e-07,
                       'Alt': -1, 'Batt': 0.0, 'Reserved': 'N/A'}})
+
+# test cases for PayloadDecoder
 CASE5 = [{'pl': '01101000001EC8',
           'pld': {"PayL": "01101000001EC8", "Msg Cnt": 0, "Msg Type": "Reg",
                   "Hardware ID": 1, "Software Major": 1, "Software Minor": 0,
@@ -397,8 +394,9 @@ def test_PayloadDecoder():
         rtn, mess, value = PayloadDecoder(CASE5[i]['pl'])
         assert value == CASE5[i]['pld']
 
-'''--------------------------------------------------------------------------'''
-'''
+
+'''-----------------------------------------------------------------------------
+
 DESCRIPTION
     This script decodes the payload delivered by the Link Labs GPS Tracker.
 
@@ -410,76 +408,70 @@ REFERENCE MATERIALS
 
 CREATED BY
     Jeff Irland (jeffrey.irland@verizon.com) in May 2018
-'''
-
-
-# import the necessary packages
-import json
-import argparse
-
-
-def LineArgumentParser():
-    '''Construct the commandline argument parser, add the rules for the
-    arguments, and then parse the arguments (found in sys.argv).
-    '''
-    # output format options
-    list1 = ['table', 'json']
-    list2 = ['gps', 'reg', 'all']
-
-    ap = argparse.ArgumentParser(
-        prog='tkrdecoder',
-        formatter_class=argparse.RawTextHelpFormatter,
-        description='This module parses and decodes the payload delivered by the Link Labs GPS Tracker\n'  # noqa
-        + 'and places it in a JSON object with the following form:'
-        + '\n\n'
-        + '    { \'PayL\': \'10174D9BEBD1C13F1B0021FFE5\', \'Msg Cnt\': 4, \'Msg Type\': \'GPS\',\n'       # noqa
-        + '      \'Lat\': 39.0962155, \'Lon\': -77.5864549, \'Alt\': 33, \'Batt\': 4.23,\n'                # noqa
-        + '      \'Reserved\': \'N/A\' }',                                                                 # noqa
-        epilog='Design details provided by the Link Labs team (www.link-labs.com).')                       # noqa
-
-    ap.add_argument('-f', '--format',
-                    required=False,
-                    choices=list1,
-                    default='json',
-                    help='format of the output with allowed values of \'' +
-                    '\', \''.join(list1) + '\'.',
-                    metavar='')
-
-    ap.add_argument('-m', '--message',
-                    required=False,
-                    choices=list2,
-                    default='gps',
-                    help='message types inthe output with allowed values of \'' +                  # noqa
-                    '\', \''.join(list2) + '\'.',
-                    metavar='')
-
-    ap.add_argument('payload',
-                    nargs='+',
-                    help='payload(s) from the Link Labs Cat-M1 GPS Tracker')
-
-    ap.add_argument('--version', action='version',
-                    version='%(prog)s 0.3')
-
-    return vars(ap.parse_args())
-
-
-def PrintHeader():
-    print('\t\t' + '\t\tMessage' + '\tMessage' + '\t' + '\t' +
-          '\t' + '\t\t\t  Battery' + '\t')
-    print('Payload' + '\t\t\t\t Count' + '\t Type' + '\tLatitude' +
-          '\tLongitude' + '\tAltitude' + '  Voltage' + '\tReserved')
-
-
-def PrintTable(parsedpayload):
-    print(parsedpayload['PayL'], '\t   ', parsedpayload['Msg Cnt'], '\t  ',
-          parsedpayload['Msg Type'], '\t', parsedpayload['Lat'], '\t',
-          parsedpayload['Lon'], '\t  ', parsedpayload['Alt'], '\t   ',
-          parsedpayload['Batt'], '\t\t  ', parsedpayload['Reserved'], sep='')
-
-
+-----------------------------------------------------------------------------'''
 if __name__ == '__main__':
+    # import the necessary packages
+    import json
+    import argparse
+
     # perform unit testing
     test_unit()
+
+    def LineArgumentParser():
+        '''Construct the commandline argument parser, add the rules for the
+        arguments, and then parse the arguments (found in sys.argv).
+        '''
+        # output format options
+        list1 = ['table', 'json']
+        list2 = ['gps', 'reg', 'all']
+
+        ap = argparse.ArgumentParser(
+            prog='tkrdecoder',
+            formatter_class=argparse.RawTextHelpFormatter,
+            description='This module parses and decodes the payload delivered by the Link Labs GPS Tracker\n'  # noqa
+            + 'and places it in a JSON object with the following form:'
+            + '\n\n'
+            + '    { \'PayL\': \'10174D9BEBD1C13F1B0021FFE5\', \'Msg Cnt\': 4, \'Msg Type\': \'GPS\',\n'       # noqa
+            + '      \'Lat\': 39.0962155, \'Lon\': -77.5864549, \'Alt\': 33, \'Batt\': 4.23,\n'                # noqa
+            + '      \'Reserved\': \'N/A\' }',                                                                 # noqa
+            epilog='Design details provided by the Link Labs team (www.link-labs.com).')                       # noqa
+
+        ap.add_argument('-f', '--format',
+                        required=False,
+                        choices=list1,
+                        default='json',
+                        help='format of the output with allowed values of \'' +
+                        '\', \''.join(list1) + '\'.',
+                        metavar='')
+
+        ap.add_argument('-m', '--message',
+                        required=False,
+                        choices=list2,
+                        default='gps',
+                        help='message types inthe output with allowed values of \'' +                  # noqa
+                        '\', \''.join(list2) + '\'.',
+                        metavar='')
+
+        ap.add_argument('payload',
+                        nargs='+',
+                        help='payload(s) from the Link Labs Cat-M1 GPS Tracker')
+
+        ap.add_argument('--version', action='version',
+                        version='%(prog)s 0.3')
+
+        return vars(ap.parse_args())
+
+    def PrintHeader():
+        print('\t\t' + '\t\tMessage' + '\tMessage' + '\t' + '\t' +
+              '\t' + '\t\t\t  Battery' + '\t')
+        print('Payload' + '\t\t\t\t Count' + '\t Type' + '\tLatitude' +
+              '\tLongitude' + '\tAltitude' + '  Voltage' + '\tReserved')
+
+    def PrintTable(parsedpayload):
+        print(parsedpayload['PayL'], '\t   ', parsedpayload['Msg Cnt'], '\t  ',
+              parsedpayload['Msg Type'], '\t', parsedpayload['Lat'], '\t',
+              parsedpayload['Lon'], '\t  ', parsedpayload['Alt'], '\t   ',
+              parsedpayload['Batt'], '\t\t  ', parsedpayload['Reserved'], sep='')                  # noqa
 
     # parse the commandline arguments
     args = LineArgumentParser()

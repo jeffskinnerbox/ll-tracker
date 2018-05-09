@@ -1,7 +1,10 @@
 # ToDo List
 List of things that have yet to be accomplished:
 
-1. **Make More Pythonic** - Proper use of `if __name__ == '__main__':`.
+1. **Combine tkrdecoder.py and tkrgetpl.py** Make these two program act work together
+in a single program (aka import tkrdecoder.py)
+1. **Make More Pythonic** - Proper use of `if __name__ == '__main__':`, use classes,
+[magic methods](https://opensource.com/article/18/4/elegant-solutions-everyday-python-problems), etc.
 1. **Support Muli-Page Output** - The query done by `rtkgetpl.py` could have multiple pages of data.
 Need to implement functionality to support this.
 1. **Text Table** - Replace your table creation method in `tkrdecoder.py`
@@ -16,12 +19,12 @@ Check out the following:
 and ["JSON.DUMP(S) & JSON.LOAD(S)"](http://www.bogotobogo.com/python/python-json-dumps-loads-file-read-write.php)
 1. **Request to a RESTful API using Python** - Check out
 ["Requests: HTTP for Humans"](http://www.python-requests.org/en/master/)
-1. **argparse --help** - Get the `--help` working properly
+1. **argparse --help** - Get the `--help` working properly and other such features.
 1. More robust methodology needs to be implemented for testing:
 See [PYTHON TESTING 101: PYTEST](https://automationpanda.com/2017/03/14/python-testing-101-pytest/)
 and [pytest](https://docs.pytest.org/en/latest/)
-1. Make use of ThingsBoard
-1. Make use of MapQuest APIs
+1. **ThingsBoard** -Make use of ThingsBoard
+1. **MapQuest** -Make use of MapQuest APIs
 
 # Done
 These things have already been done:
