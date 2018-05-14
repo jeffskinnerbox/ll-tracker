@@ -38,6 +38,7 @@
 ### Unit test / coverage reports
 htmlcov/
 .tox/
+.pytest_cache/
 .coverage
 .cache
 nosetests.xml
