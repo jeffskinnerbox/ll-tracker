@@ -3,6 +3,15 @@ These are very early version of the
 the commandline tools `tkrdecoder.py` and `tkrgetpl.py`.
 Also, you will need Link Labs credentials to [Conductor](https://conductor.link-labs.com/).
 
+# Testing
+Unit test functions have been created using the [pytest][01] framework / paridiagm.
+Testing can be perfromed via
+
+```bash
+# run test cases writen for pytest
+pytest -v tkrstatus.py tkrdecoder.py tkrgetpl.py
+```
+
 # tkrdecoder.py
 Two types of payloads are produced by the tracker: GPS message and Registration message.
 
@@ -282,3 +291,16 @@ $ ./tkrstatus.py -f json | grep GPS | jq -C '.'
   .
   .
 ```
+
+
+
+[01]:https://docs.pytest.org/en/latest/
+[02]:
+[03]:
+[04]:
+[05]:
+[06]:
+[07]:
+[08]:
+[09]:
+[10]:

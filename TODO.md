@@ -18,9 +18,14 @@ and ["JSON.DUMP(S) & JSON.LOAD(S)"](http://www.bogotobogo.com/python/python-json
 1. **Request to a RESTful API using Python** - Check out
 ["Requests: HTTP for Humans"](http://www.python-requests.org/en/master/)
 1. **argparse --help** - Get the `--help` working properly and other such features.
+[argparse — Command-Line Option and Argument Parsing](https://pymotw.com/3/argparse/)
 1. More robust methodology needs to be implemented for testing:
-See [PYTHON TESTING 101: PYTEST](https://automationpanda.com/2017/03/14/python-testing-101-pytest/)
-and [pytest](https://docs.pytest.org/en/latest/)
+See [pytest](https://docs.pytest.org/en/latest/),
+[PYTHON TESTING 101: PYTEST](https://automationpanda.com/2017/03/14/python-testing-101-pytest/),
+[Testing Python Applications with Pytest](https://semaphoreci.com/community/tutorials/testing-python-applications-with-pytest),
+[PYTEST: CREATING AND USING FIXTURES FOR STREAMLINED TESTING](http://programeveryday.com/post/pytest-creating-and-using-fixtures-for-streamlined-testing/)
+1 **Geohasing and What3Words** - Make use of these encoding schemes to make it easier to work with the Lat / Lon data.
+See [geohash.org](http://geohash.org/) and [What3Words](https://what3words.com/developers/)
 1. **ThingsBoard** -Make use of ThingsBoard
 1. **MapQuest** -Make use of MapQuest APIs
 
