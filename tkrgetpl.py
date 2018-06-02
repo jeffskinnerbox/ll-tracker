@@ -223,7 +223,7 @@ if __name__ == '__main__':
         args = vars(ap.parse_args())
         rtn, mess = CheckArgument(args)
         if not rtn:
-            print(mess)
+            print(mess, file=sys.stderr)
             exit(1)
 
         return args
@@ -234,14 +234,14 @@ if __name__ == '__main__':
     # read the file containing your credentials for Conductor
     rtn, mess, cred = ReadCredentials(args['credentials'])
     if not rtn:
-        print(mess)
+        print(mess, file=sys.stderr)
         exit(1)
 
     # query conductor for data
     rtn, mess, r = QueryConductor(cred, args['start'], args['stop'])
     if not rtn:
         print(mess + '  HTTP status codes = ' + str(r.status_code))
-        print(r.text)
+        print(r.text, file=sys.stderr)
         exit(1)
 
     # format the recieved json text as a python list object
@@ -268,5 +268,5 @@ if __name__ == '__main__':
                   data['results'][i]['value']['pld'])
 
     else:
-        print('Error: Unsupported format requested.')
+        print('Error: Unsupported format requested.', file=sys.stderr)
         exit(1)

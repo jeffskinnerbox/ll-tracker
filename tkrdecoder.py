@@ -484,7 +484,7 @@ if __name__ == '__main__':
     for pl in args['payload']:
         rtn, mess, decoded_payload = PayloadDecoder(pl)    # returns dictionary
         if not rtn:
-            print(mess + '  Payload = ' + pl)
+            print(mess + '  Payload = ' + pl, file=sys.stderr)
             exit(1)
 
         # print a formated output of the payload strings
