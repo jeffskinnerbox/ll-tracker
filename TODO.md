@@ -24,7 +24,8 @@ See [pytest](https://docs.pytest.org/en/latest/),
 [PYTHON TESTING 101: PYTEST](https://automationpanda.com/2017/03/14/python-testing-101-pytest/),
 [Testing Python Applications with Pytest](https://semaphoreci.com/community/tutorials/testing-python-applications-with-pytest),
 [PYTEST: CREATING AND USING FIXTURES FOR STREAMLINED TESTING](http://programeveryday.com/post/pytest-creating-and-using-fixtures-for-streamlined-testing/)
-1 **Geohasing and What3Words** - Make use of these encoding schemes to make it easier to work with the Lat / Lon data.
+1. Condsider including logging: [Python's Standard Logging Library](http://docs.python-guide.org/en/latest/writing/logging/), [Good logging practice in Python](https://fangpenlin.com/posts/2012/08/26/good-logging-practice-in-python/), [Python logging best practices with JSON steroids](https://logmatic.io/blog/python-logging-with-json-steroids/)
+1. **Geohasing and What3Words** - Make use of these encoding schemes to make it easier to work with the Lat / Lon data.
 See [geohash.org](http://geohash.org/) and [What3Words](https://what3words.com/developers/)
 1. **ThingsBoard** -Make use of ThingsBoard
 1. **MapQuest** -Make use of MapQuest APIs
