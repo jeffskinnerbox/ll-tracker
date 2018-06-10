@@ -18,6 +18,19 @@ REFERENCE MATERIALS
 CREATED BY
     Jeff Irland (jeffrey.irland@verizon.com) in May 2018
 -----------------------------------------------------------------------------'''
+
+# authorship information
+__prog__ = 'mongoin'
+__version__ = '0.1'
+__status__ = 'Development'
+__author__ = 'Jeff Irland'
+__maintainer__ = 'Jeff Irland'
+__email__ = 'jeffskinnerbox@yahoo.com'
+__credits__ = ''
+__copyright__ = 'Copyright 2018'
+__license__ = 'GNU General Public License'
+__python__ = 'Version 3.6.3'
+
 # mapping of hex characters to binary repensetation in ascii
 hex2bin_map = {'0': '0000', '1': '0001', '2': '0010', '3': '0011', '4': '0100',
                '5': '0101', '6': '0110', '7': '0111', '8': '1000', '9': '1001',
@@ -429,7 +442,7 @@ if __name__ == '__main__':
         list2 = ['gps', 'reg', 'all']
 
         ap = argparse.ArgumentParser(
-            prog='tkrdecoder',
+            prog=__prog__,
             formatter_class=argparse.RawTextHelpFormatter,
             description='This module parses and decodes the payload delivered by the Link Labs GPS Tracker\n'  # noqa
             + 'and places it in a JSON object with the following form:'

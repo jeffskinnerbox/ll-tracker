@@ -20,6 +20,18 @@ import json
 import tkrgetpl
 import tkrdecoder
 
+# authorship information
+__prog__ = 'mongoin'
+__version__ = '0.1'
+__status__ = 'Development'
+__author__ = 'Jeff Irland'
+__maintainer__ = 'Jeff Irland'
+__email__ = 'jeffskinnerbox@yahoo.com'
+__credits__ = ''
+__copyright__ = 'Copyright 2018'
+__license__ = 'GNU General Public License'
+__python__ = 'Version 3.6.3'
+
 
 if __name__ == '__main__':
     # import the necessary packages
@@ -63,7 +75,7 @@ if __name__ == '__main__':
         list = ['unformatted', 'table', 'json', 'csv']
 
         ap = argparse.ArgumentParser(
-            prog='tkrstatus',
+            prog=__prog__,
             description='This script queries for the Link Labs GPS Tracker data. \
             This information is stored on the Link Labs Conductor platform.',
             epilog='Design details provided by the Link Labs team (www.link-labs.com).')           # noqa
