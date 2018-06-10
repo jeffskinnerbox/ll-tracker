@@ -10,6 +10,7 @@ Python's class to pretty-print tabular data in a terminal.
 See [Texttable](https://pypi.org/project/texttable/),
 [Simple formatted tables in python with Texttable module](https://oneau.wordpress.com/2010/05/30/simple-formatted-tables-in-python-with-texttable/), and
 [Texttable Examples](https://programtalk.com/python-examples/texttable.Texttable/).
+1. **Bring TextTable, JSON, and CSV all together** - The idea here is to support readable table, JSON, and CSV to support all types of usage.  Put all of this into a reusable object.
 1. **JSON Encoding / Decoding** - Make proper use of JSON modules with Python.
 Check out the following:
 ["JSON encoding and decoding with Python"](https://pythonspot.com/json-encoding-and-decoding-with-python/),
@@ -24,7 +25,7 @@ See [pytest](https://docs.pytest.org/en/latest/),
 [PYTHON TESTING 101: PYTEST](https://automationpanda.com/2017/03/14/python-testing-101-pytest/),
 [Testing Python Applications with Pytest](https://semaphoreci.com/community/tutorials/testing-python-applications-with-pytest),
 [PYTEST: CREATING AND USING FIXTURES FOR STREAMLINED TESTING](http://programeveryday.com/post/pytest-creating-and-using-fixtures-for-streamlined-testing/)
-1. Condsider including logging: [Python's Standard Logging Library](http://docs.python-guide.org/en/latest/writing/logging/), [Good logging practice in Python](https://fangpenlin.com/posts/2012/08/26/good-logging-practice-in-python/), [Python logging best practices with JSON steroids](https://logmatic.io/blog/python-logging-with-json-steroids/)
+1. Consider including logging: [Python's Standard Logging Library](http://docs.python-guide.org/en/latest/writing/logging/), [Good logging practice in Python](https://fangpenlin.com/posts/2012/08/26/good-logging-practice-in-python/), [Python logging best practices with JSON steroids](https://logmatic.io/blog/python-logging-with-json-steroids/)
 1. **Geohasing and What3Words** - Make use of these encoding schemes to make it easier to work with the Lat / Lon data.
 See [geohash.org](http://geohash.org/) and [What3Words](https://what3words.com/developers/)
 1. **ThingsBoard** -Make use of ThingsBoard
@@ -38,4 +39,5 @@ Change this to support the more familiar [ISO 8601](https://en.wikipedia.org/wik
 1. **Include Parsing of Registration Message** - your currently only parsing GPS messages
 1. **Combine tkrdecoder.py and tkrgetpl.py** Make these two program work together
 in a single program (aka import tkrdecoder.py)
+1. **Export to CSV File** - for the Bash script user, provide another format.
 
