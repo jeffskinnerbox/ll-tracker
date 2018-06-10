@@ -29,6 +29,9 @@ if __name__ == '__main__':
     # path to where the credentials are stored
     CREDPATH = '/home/jeff/src/ll-tracker/.credentials.json'
 
+    # default delimiter for csv format
+    DELIMITER = ','
+
     def CheckArgument(args):
         if args['stop'] < args['start']:
             return False, 'Error: Start-time is after stop-time.'
@@ -57,7 +60,7 @@ if __name__ == '__main__':
         start_time = stop_time - tdelta
 
         # output format options
-        list = ['unformatted', 'table', 'json']
+        list = ['unformatted', 'table', 'json', 'csv']
 
         ap = argparse.ArgumentParser(
             prog='tkrstatus',
@@ -82,6 +85,11 @@ if __name__ == '__main__':
                         required=False,
                         default=stop_time.isoformat(),
                         help='stop time for messages (default time is now)')
+
+        ap.add_argument('-d', '--delimiter',
+                        required=False,
+                        default=DELIMITER,
+                        help='delimiter used in the csv format.')
 
         ap.add_argument('-c', '--credentials',
                         required=False,
@@ -140,6 +148,11 @@ if __name__ == '__main__':
         for i in range(data['resultCount']):
             print(data['results'][i]['value']['startReceiveTime'], '\t',
                   data['results'][i]['value']['pld'])
+    elif args['format'] == 'csv':
+        # output select data and format it in a table
+        for i in range(data['resultCount']):
+            print(data['results'][i]['value']['startReceiveTime'] +
+                  args['delimiter'] + data['results'][i]['value']['pld'])
 
     else:
         print('Error: Unsupported format requested.', file=sys.stderr)

@@ -417,12 +417,15 @@ if __name__ == '__main__':
     # perform unit testing
     test_unit()
 
+    # default delimiter for csv format
+    DELIMITER = ','
+
     def LineArgumentParser():
         '''Construct the commandline argument parser, add the rules for the
         arguments, and then parse the arguments (found in sys.argv).
         '''
         # output format options
-        list1 = ['table', 'json']
+        list1 = ['table', 'json', 'csv']
         list2 = ['gps', 'reg', 'all']
 
         ap = argparse.ArgumentParser(
@@ -456,6 +459,11 @@ if __name__ == '__main__':
                         nargs='+',
                         help='payload(s) from the Link Labs Cat-M1 GPS Tracker')
 
+        ap.add_argument('-d', '--delimiter',
+                        required=False,
+                        default=DELIMITER,
+                        help='delimiter used in the csv format.')
+
         ap.add_argument('--version', action='version',
                         version='%(prog)s 0.3')
 
@@ -472,6 +480,12 @@ if __name__ == '__main__':
               parsedpayload['Msg Type'], '\t', parsedpayload['Lat'], '\t',
               parsedpayload['Lon'], '\t  ', parsedpayload['Alt'], '\t   ',
               parsedpayload['Batt'], '\t\t  ', parsedpayload['Reserved'], sep='')                  # noqa
+
+    def PrintCSV(parsedpayload):
+        print(parsedpayload['PayL'], parsedpayload['Msg Cnt'],
+              parsedpayload['Msg Type'], parsedpayload['Lat'],
+              parsedpayload['Lon'], parsedpayload['Alt'],
+              parsedpayload['Batt'], parsedpayload['Reserved'], sep=args['delimiter'])             # noqa
 
     # parse the commandline arguments
     args = LineArgumentParser()
@@ -490,5 +504,7 @@ if __name__ == '__main__':
         # print a formated output of the payload strings
         if args['format'] == 'table':
             PrintTable(decoded_payload)                    # print table format
+        elif args['format'] == 'csv':
+            PrintCSV(decoded_payload)                      # print csv format
         else:
             print(json.dumps(decoded_payload))             # print json format
