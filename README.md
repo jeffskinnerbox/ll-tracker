@@ -1,3 +1,6 @@
+* [Using PyInstaller to Easily Distribute Python Applications](https://realpython.com/pyinstaller-python/)
+* [Linux Fu: Python GUIs For Command Line Programs (Almost) Instantly](https://hackaday.com/2019/10/14/linux-fu-python-guis-for-command-line-programs-almost-instantly/)
+
 # Warning
 These are very early version of the
 the commandline tools `tkrdecoder.py` and `tkrgetpl.py`.

@@ -30,6 +30,7 @@ See [pytest](https://docs.pytest.org/en/latest/),
 See [geohash.org](http://geohash.org/) and [What3Words](https://what3words.com/developers/)
 1. **ThingsBoard** -Make use of ThingsBoard
 1. **MapQuest** -Make use of MapQuest APIs
+1. Make use of [How to work with dates and time with Python](https://opensource.com/article/17/5/understanding-datetime-python-primer)
 
 # Done
 These things have already been done:

@@ -12,6 +12,7 @@ REFERENCE MATERIALS
     * https://pymotw.com/3/argparse/
     * https://www.link-labs.com/documentation/conductor-data-platform-user-guide#Client-Edge       # noqa
     * https://www.youtube.com/watch?v=eirjjyP2qcQ
+    * https://medium.com/factory-mind/regex-tutorial-a-simple-cheatsheet-by-examples-649dc1c3f285  # noqa
 
 CREATED BY
     Jeff Irland (jeffrey.irland@verizon.com) in May 2018
